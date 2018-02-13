@@ -260,14 +260,16 @@ void ObjectDetectThread::run() {
         if (scores(i) > 0.9) {
           m_logger.information(Poco::format("score: %d, class: %d box: [%d, %d, %d, %d]", int(scores(i) * 100), int(classes(i)),
                          ymin, xmin, ymax, xmax));
-          /// show us the image
+
           /// Add a box on img
           /// Rect Rect_(_Tp _x, _Tp _y, _Tp _width, _Tp _height);
           cv::rectangle(pWorkNf->m_frame.m_img, cv::Rect(xmin, ymin, xmax - xmin, ymax - ymin), cv::Scalar(0, 255, 0));
-          cv::imshow("Preview", pWorkNf->m_frame.m_img);
+          ///cv::imshow("Preview", pWorkNf->m_frame.m_img);
           break;
         }
       }
+      /// show us the image
+      cv::imshow("Preview", pWorkNf->m_frame.m_img);
     } catch (const std::exception& e) {
       m_logger.error("ObjectDetectThread::run: Something bad happened! %s", e.what());
     }

@@ -4,6 +4,7 @@
 
 #include "VideoStreamDecodeThread.h"
 #include "yuv2bgr.h"
+#include "resizeImageGPU.h"
 
 bool VideoStreamDecodeThread::Init() {
   bool res = true;
@@ -180,12 +181,23 @@ void VideoStreamDecodeThread::run() {
           break;
         }
         SharedIplImage pImg;
-        pImg = cvCreateImage(cvSize(m_pDecoderCtx->width, m_pDecoderCtx->height), 8, 3);
+        if (m_config.m_ifResize)
+        {
+          pImg = cvCreateImage(cvSize(m_config.m_resizedWidth, m_config.m_resizedHeight), 8, 3);
+        }
+        else {
+          pImg = cvCreateImage(cvSize(m_pDecoderCtx->width, m_pDecoderCtx->height), 8, 3);
+        }
         if (is_first_time) {
           resolution = pYUVFrame->height * pYUVFrame->width;
           reqMat.create(pYUVFrame->height, pYUVFrame->width, CV_8UC3);
           resMat.create(pYUVFrame->height, pYUVFrame->width, CV_8UC3);
           resMat.step = pBGRFrame->linesize[0];
+          if (m_config.m_ifResize)
+          {
+            resizedMat.create(m_config.m_resizedHeight, m_config.m_resizedWidth, CV_8UC3);
+            resizedMat.step = m_config.m_resizedWidth * 3;
+          }
           bufsize0 = pYUVFrame->height * pYUVFrame->linesize[0];
           bufsize1 = pYUVFrame->height * pYUVFrame->linesize[1] / 2;
           is_first_time = false;
@@ -193,7 +205,13 @@ void VideoStreamDecodeThread::run() {
         cudaMemcpy(reqMat.data, pYUVFrame->data[0], bufsize0, cudaMemcpyHostToDevice);
         cudaMemcpy(reqMat.data + bufsize0, pYUVFrame->data[1], bufsize1, cudaMemcpyHostToDevice);
         cvtColor(reqMat.data, resMat.data, resolution, pYUVFrame->height, pYUVFrame->width, pYUVFrame->linesize[0]);
-        cudaMemcpy(pImg->imageData, resMat.data, resMat.cols *resMat.rows * sizeof(uchar3), cudaMemcpyDeviceToHost);
+        if (m_config.m_ifResize)
+        {
+          resizeImageGPU(resizedMat.data, resMat.data, resizedMat.step, resMat.step, m_config.m_resizedHeight, m_config.m_resizedWidth, resMat.rows, resMat.cols);
+          cudaMemcpy(pImg->imageData, resizedMat.data, resizedMat.cols * resizedMat.rows * sizeof(uchar3), cudaMemcpyDeviceToHost);
+        } else {
+          cudaMemcpy(pImg->imageData, resMat.data, resMat.cols *resMat.rows * sizeof(uchar3), cudaMemcpyDeviceToHost);
+        }
         cv::Mat img = cv::cvarrToMat(pImg, true);
         cv::imwrite("test.jpg", img);
         ImageFrame data(img);

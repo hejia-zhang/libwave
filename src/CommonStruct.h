@@ -35,6 +35,9 @@ struct AppConfig {
   std::string m_szVideoStreamType;
   std::string m_szVideoStreamAddress;
   bool m_openPrev;
+  bool m_ifResize;
+  int m_resizedWidth;
+  int m_resizedHeight;
 
   // For TF
   std::string m_szLabelPath;

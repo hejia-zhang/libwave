@@ -90,6 +90,13 @@ bool VideoDetectApp::ParseVideoConfiguration() {
     m_config.m_szVideoStreamType = config().getString("video_stream_type");
     m_config.m_szHwName = config().getString("hw_name");
     m_config.m_openPrev = config().getBool("preview_open");
+
+    /// Check if we need to resize the input video image
+    m_config.m_ifResize = config().getBool("flag_resized");
+    if (m_config.m_ifResize) {
+      m_config.m_resizedWidth = config().getInt("resized_width");
+      m_config.m_resizedHeight = config().getInt("resized_height");
+    }
   } catch (Poco::NotFoundException) {
     logger().error("VideoDetectApp::ParseVideoConfiguration: Can't find some required parameters! "
                        "Please set your Video Process parameters in properties file completely!");
