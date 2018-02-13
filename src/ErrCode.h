@@ -7,19 +7,20 @@
 /// The whole application error code
 /// Like success, some common errors
 enum ErrCode {
-  RES_SUC = 0,
-  RES_NO_HW = 1,    // can't find hw
-  RES_ERR_OPEN_INPUT = 2, // can't open input
-  RES_ERR_FIND_STREAM_INFO = 3, // can't find stream info
-  RES_ERR_FIND_VIDEO_STREAM = 4,  // can't find a stream
-  RES_ERR_NOT_SUPPORT_DEVICE_TYPE = 5, // decoder does not support device type
-  RES_NOT_FIND_DECODER = 6, // can't find decoder
+
 };
 
 /// The error code for video processing.
 /// From video to frame image.
 enum VID_ERR {
-
+  RES_VID_OK = 0,
+  RES_VID_NO_HW = 1,    // can't find hw
+  RES_VID_ERR_OPEN_INPUT = 2, // can't open input
+  RES_VID_ERR_FIND_STREAM_INFO = 3, // can't find stream info
+  RES_VID_ERR_FIND_VIDEO_STREAM = 4,  // can't find a stream
+  RES_VID_ERR_NOT_SUPPORT_DEVICE_TYPE = 5, // decoder does not support device type
+  RES_VID_OPEN_DECODER = 6, // can't find decoder
+  RES_VID_DEV_TYPE_NOT_SUPPORT = 7,
 };
 
 /// The error code in TF object detect.

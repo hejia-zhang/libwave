@@ -26,19 +26,19 @@ tensorflow::Status ReadTensorFrameImageData(const ImageFrame& image_frame,
   auto root = tensorflow::Scope::NewRootScope();
 
   /// Read Image file into a tensor named input
-  tensorflow::Tensor input(tensorflow::DT_FLOAT, tensorflow::TensorShape({1, image_frame.m_img.rows,
+  tensorflow::Tensor input(tensorflow::DT_UINT8, tensorflow::TensorShape({1, image_frame.m_img.rows,
                                                                           image_frame.m_img.cols,
-                                                                          image_frame.m_img.depth()}));
+                                                                          3}));
   /// Copy image data into tensor memory
-  auto input_tensor_mapped = input.tensor<float, 4>();
+  auto input_tensor_mapped = input.tensor<uchar, 4>();
 
   const uchar* source_data = image_frame.m_img.data;
 
   for (int y = 0; y < image_frame.m_img.rows; ++y) {
-    const uchar* source_row = source_data + (y * image_frame.m_img.cols * image_frame.m_img.depth());
+    const uchar* source_row = source_data + (y * image_frame.m_img.cols * 3);
     for (int x = 0; x < image_frame.m_img.cols; ++x) {
-      const uchar* source_pixel = source_row + (x * image_frame.m_img.depth());
-      for (int c = 0; c < image_frame.m_img.depth(); ++c) {
+      const uchar* source_pixel = source_row + (x * 3);
+      for (int c = 0; c < 3; ++c) {
         const uchar* source_value = source_pixel + c;
         input_tensor_mapped(0, y, x, c) = *source_value;
       }
@@ -102,7 +102,12 @@ tensorflow::Status LoadGraph(const std::string& graph_path, std::unique_ptr<tens
   if (!load_graph_status.ok()) {
     return tensorflow::errors::NotFound("Failed to load compute graph at '", graph_path, "'");
   }
-  session.reset(tensorflow::NewSession(tensorflow::SessionOptions()));
+  auto config = tensorflow::ConfigProto();
+  auto gpuOptions = config.gpu_options();
+  gpuOptions.set_allow_growth(true);
+  auto seesionOptions = tensorflow::SessionOptions();
+  seesionOptions.config = config;
+  session.reset(tensorflow::NewSession(seesionOptions));
   tensorflow::Status session_create_status = (session->Create(graph_def));
   if (!session_create_status.ok()) {
     return session_create_status;
@@ -186,8 +191,13 @@ TF_ERR ObjectDetectThread::Init() {
   m_logger.information("Begin to initialize the TF Session...");
   m_logger.information(Poco::format("graph_path: %s", m_config.m_szGraphPath));
   m_logger.information(Poco::format("label map path: %s", m_config.m_szLabelPath));
-  m_logger.information(Poco::format("", m_config.m_szInputLayer));
-  m_logger.information(Poco::format("", m_config.m_vecOutputLayers));
+  m_logger.information(Poco::format("input layer: %s", m_config.m_szInputLayer));
+  std::string t_szOutputLayers;
+  for (const auto& val : m_config.m_vecOutputLayers) {
+    t_szOutputLayers += val;
+    t_szOutputLayers += " ";
+  }
+  m_logger.information(Poco::format("output layers: [ %s ]", t_szOutputLayers));
 
   /// Now load graph!
   tensorflow::Status load_graph_status = LoadGraph(m_config.m_szGraphPath, m_session);
@@ -195,6 +205,12 @@ TF_ERR ObjectDetectThread::Init() {
     m_logger.error(Poco::format("ObjectDetectThread::Init() LoadGraph Error!!! Error Msg: %s",
                                 load_graph_status.ToString()));
     return RES_TF_LOAD_GRAPH;
+  }
+
+  /// Open a new preview window
+  if (m_config.m_openPrev) {
+    cv::namedWindow("Preview");
+    cv::startWindowThread();
   }
 
   return RES_TF_OK;
@@ -224,7 +240,7 @@ void ObjectDetectThread::run() {
       tensorflow::Status run_status = m_session->Run({{m_config.m_szInputLayer, resized_tensor}},
                                                      m_config.m_vecOutputLayers, {}, &outputs);
       if (!run_status.ok()) {
-        m_logger.error(Poco::format("Running model failed: %s", run_status));
+        m_logger.error(Poco::format("Running model failed: %s", run_status.ToString()));
       }
 
       int image_width = resized_tensor.dims();
@@ -236,9 +252,19 @@ void ObjectDetectThread::run() {
       auto boxes = outputs[0].flat_outer_dims<float, 3>();
 
       for (size_t i = 0; i < num_detections(0) && i < 20; i++) {
-        if (scores(i) > 0.5) {
-          m_logger.error("score: %d%, class: %d box: [%d, %d, %d, %d]", scores(i) * 100, classes(i),
-                         boxes(0, i, 0), boxes(0, i, 1), boxes(0, i, 2), boxes(0, i, 3));
+        /// [ymin, xmin, ymax, xmax]
+        int ymin = boxes(0, i, 0) * pWorkNf->m_frame.m_img.rows;
+        int xmin = boxes(0, i, 1) * pWorkNf->m_frame.m_img.cols;
+        int ymax = boxes(0, i, 2) * pWorkNf->m_frame.m_img.rows;
+        int xmax = boxes(0, i, 3) * pWorkNf->m_frame.m_img.cols;
+        if (scores(i) > 0.9) {
+          m_logger.information(Poco::format("score: %d, class: %d box: [%d, %d, %d, %d]", int(scores(i) * 100), int(classes(i)),
+                         ymin, xmin, ymax, xmax));
+          /// show us the image
+          /// Add a box on img
+          /// Rect Rect_(_Tp _x, _Tp _y, _Tp _width, _Tp _height);
+          cv::rectangle(pWorkNf->m_frame.m_img, cv::Rect(xmin, ymin, xmax - xmin, ymax - ymin), cv::Scalar(0, 255, 0));
+          cv::imshow("Preview", pWorkNf->m_frame.m_img);
           break;
         }
       }
@@ -277,4 +303,5 @@ void ObjectDetectThread::Exit() {
   m_notiQueue.clear();
   m_notiQueue.wakeUpAll();
   m_thread.join();
+  cv::destroyWindow("Preview");
 }

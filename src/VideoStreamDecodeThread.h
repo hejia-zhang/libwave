@@ -32,11 +32,22 @@ extern "C" {
 
 using FrameCBFunc = void(const ImageFrame&);
 
+///
+/// This is a video stream decode thread class
+///
+///
 class VideoStreamDecodeThread : public Poco::Runnable, public Poco::RefCountedObject {
 public:
   typedef Poco::AutoPtr<VideoStreamDecodeThread> Ptr;
+  /// The function to start the thread
+  /// \param cb
   void Start(const std::function<FrameCBFunc>& cb);
+  /// The function to exit the thread
+  ///
   void Exit();
+  /// The constructor function
+  /// \param config
+  /// \param logger
   VideoStreamDecodeThread(const AppConfig& config, Poco::Logger& logger) : m_logger(logger), m_config(config) {
   }
   virtual ~VideoStreamDecodeThread() {
@@ -45,8 +56,11 @@ public:
     }
   }
 
+  /// The function is used to init a ffmpeg video decoder
+  /// \return
   bool Init();
-  ErrCode Connect();
+  /// The function is used to connect to a video url
+  VID_ERR Connect();
 
 protected:
   virtual void run();
@@ -54,18 +68,19 @@ protected:
   Poco::Logger& m_logger;
 
 private:
-  AVFormatContext *m_pFormatCtx = nullptr;
+  AVFormatContext *m_pFormatCtx = nullptr; ///< used in decode
   AVCodecContext *m_pDecoderCtx = nullptr;
+  enum AVPixelFormat m_hwPixFmt;
   AVCodec *m_pDecoder = nullptr;
   AVPacket m_packet;
   AVStream *m_pVideo = nullptr;
   enum AVHWDeviceType m_hwType = AV_HWDEVICE_TYPE_NONE;
+  AVBufferRef *m_phwDevCtx = nullptr;
 
   int m_nVideoStreamIndex = -1;
 
   enum AVPixelFormat m_avPixelFormat;
   std::string m_strStreamUrl;
-  std::string m_strHwName;
 
   bool m_bConnected = false;
   Poco::Thread m_thread;
@@ -75,5 +90,6 @@ private:
 private:
   enum AVPixelFormat get_hw_format(AVCodecContext *ctx,
                                    const enum AVPixelFormat *pix_fmts);
+  int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type);
 };
 #endif //VIDEODETECTDEMO_VIDEOSTREAMDECODER_H

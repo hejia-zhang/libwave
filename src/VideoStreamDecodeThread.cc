@@ -8,52 +8,119 @@
 bool VideoStreamDecodeThread::Init() {
   bool res = true;
   m_strStreamUrl = m_config.m_szVideoStreamAddress;
-  m_strHwName = m_config.m_szHwName;
+  /// Try to find the hardware type according to hardware name we specified
+  m_hwType = av_hwdevice_find_type_by_name(m_config.m_szHwName.c_str());
+  if (AV_HWDEVICE_TYPE_NONE == m_hwType) {
+    m_logger.error("VideoStreamDecodeThread::Init: "
+                       "Can't find the hardware type matches with the name we specified: %s", m_config.m_szHwName);
+    return false;
+  }
   av_register_all();
   avcodec_register_all();
   avformat_network_init();
   avfilter_register_all();
   avdevice_register_all();
-  res = Connect();
+  if (RES_VID_OK != Connect()) {
+    return false;
+  }
   return res;
 }
 
-ErrCode VideoStreamDecodeThread::Connect() {
-  ErrCode res = RES_SUC;
+int VideoStreamDecodeThread::hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type)
+{
+  int err = 0;
+
+  if ((err = av_hwdevice_ctx_create(&m_phwDevCtx, type,
+                                    NULL, NULL, 0)) < 0) {
+    m_logger.error("Failed to create specified HW device.");
+    return err;
+  }
+  ctx->hw_device_ctx = av_buffer_ref(m_phwDevCtx);
+
+  return err;
+}
+
+enum AVPixelFormat VideoStreamDecodeThread::get_hw_format(AVCodecContext *ctx,
+                                                          const enum AVPixelFormat *pix_fmts)
+{
+  const enum AVPixelFormat *p;
+
+  for (p = pix_fmts; *p != -1; p++) {
+    if (*p == m_hwPixFmt)
+      return *p;
+  }
+
+  m_logger.error("Failed to get HW surface format.");
+  return AV_PIX_FMT_NONE;
+}
+
+VID_ERR VideoStreamDecodeThread::Connect() {
+  VID_ERR res = RES_VID_OK;
   do {
-    // Try to open input
-    if (avformat_open_input(&m_pFormatCtx, m_strHwName.c_str(), NULL, NULL) != 0) {
-      res = RES_ERR_OPEN_INPUT;
+    /// Try to open input
+    /// It is compatible with video and stream
+    if (avformat_open_input(&m_pFormatCtx, m_strStreamUrl.c_str(), NULL, NULL) != 0) {
+      m_logger.error(Poco::format("VideoStreamDecodeThread::Connect "
+                                      "Can't open the video stream with this address: %s", m_strStreamUrl));
+      res = RES_VID_ERR_OPEN_INPUT;
       break;
     }
 
     // Try to find a stream
     if (avformat_find_stream_info(m_pFormatCtx, NULL) < 0) {
-      res = RES_ERR_FIND_STREAM_INFO;
+      m_logger.error(Poco::format("VideoStreamDecodeThread::Connect "
+                                      "Can't find the stream info: %s", m_strStreamUrl));
+      res = RES_VID_ERR_FIND_STREAM_INFO;
       break;
     }
 
-    // Try to find the video stream
-    m_nVideoStreamIndex = av_find_best_stream(m_pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+    /// Try to find the video stream
+    m_nVideoStreamIndex = av_find_best_stream(m_pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, &m_pDecoder, 0);
     if (m_nVideoStreamIndex < 0) {
-      res = RES_ERR_FIND_VIDEO_STREAM;
+      m_logger.error(Poco::format("VideoStreamDecodeThread::Connect "
+                                      "Can't find the video stream: %s", m_strStreamUrl));
+      res = RES_VID_ERR_FIND_VIDEO_STREAM;
       break;
     }
 
-    // Try to configure for gpu decode
-    m_pDecoder = avcodec_find_decoder_by_name("cuda");
-    m_pDecoderCtx = avcodec_alloc_context3(m_pDecoder);
-    m_pDecoderCtx->height = m_pFormatCtx->streams[m_nVideoStreamIndex]->codecpar->height;
-    m_pDecoderCtx->width = m_pFormatCtx->streams[m_nVideoStreamIndex]->codecpar->width;
-    m_pDecoderCtx->thread_type = 2;
+    /// Try to configure for gpu decode
+    //m_pDecoder = avcodec_find_decoder_by_name("cuda");
+    /// Check if hw type we specified is supported by this decoder
+    for (int i = 0;;i++) {
+      const AVCodecHWConfig *config = avcodec_get_hw_config(m_pDecoder, i);
+      if (!config) {
+        m_logger.error(Poco::format("Decoder %s does not support device type %s.",
+                                    m_pDecoder->name, av_hwdevice_get_type_name(m_hwType)));
+        res = RES_VID_DEV_TYPE_NOT_SUPPORT;
+        break;
+      }
+      if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX && config->device_type == m_hwType) {
+        m_hwPixFmt = config->pix_fmt;
+        break;
+      }
+    }
+    if (res != RES_VID_OK) {
+      break;
+    }
 
-    if (!m_pDecoder || avcodec_open2(m_pDecoderCtx, m_pDecoder, NULL) < 0) {
-      res = RES_NOT_FIND_DECODER;
+    m_pDecoderCtx = avcodec_alloc_context3(m_pDecoder);
+
+    m_pVideo = m_pFormatCtx->streams[m_nVideoStreamIndex];
+    avcodec_parameters_to_context(m_pDecoderCtx, m_pVideo->codecpar);
+    // m_pDecoderCtx->height = m_pFormatCtx->streams[m_nVideoStreamIndex]->codecpar->height;
+    // m_pDecoderCtx->width = m_pFormatCtx->streams[m_nVideoStreamIndex]->codecpar->width;
+    // m_pDecoderCtx->thread_type = 2;
+    // m_pDecoderCtx->get_format = get_hw_format;
+    hw_decoder_init(m_pDecoderCtx, m_hwType);
+
+    if (avcodec_open2(m_pDecoderCtx, m_pDecoder, NULL) < 0) {
+      m_logger.error(Poco::format("Can't open decoder: %s", m_pDecoder->name));
+      res = RES_VID_OPEN_DECODER;
       break;
     }
   } while (false);
   // If failed in connection, release the resources
-  if (res != RES_SUC) {
+  if (res != RES_VID_OK) {
     avformat_close_input(&m_pFormatCtx);
     if (m_pDecoderCtx) {
       avcodec_free_context(&m_pDecoderCtx);
@@ -128,6 +195,7 @@ void VideoStreamDecodeThread::run() {
         cvtColor(reqMat.data, resMat.data, resolution, pYUVFrame->height, pYUVFrame->width, pYUVFrame->linesize[0]);
         cudaMemcpy(pImg->imageData, resMat.data, resMat.cols *resMat.rows * sizeof(uchar3), cudaMemcpyDeviceToHost);
         cv::Mat img = cv::cvarrToMat(pImg, true);
+        cv::imwrite("test.jpg", img);
         ImageFrame data(img);
         data.frameIdx = nFrameNum;
         m_frameCallback(data);

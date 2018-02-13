@@ -30,10 +30,11 @@ struct ImageFrame {
 
 struct AppConfig {
   // For video processing
-  int m_nTolerableFrameProcessDely = 50;
-  std::string m_szHwName = "cuda";
-  std::string m_szVideoStreamType = "MP4";
-  std::string m_szVideoStreamAddress = "/home/hjzh/Projects/VideoDetectDemo/data/video0.MP4";
+  int m_nTolerableFrameProcessDely;
+  std::string m_szHwName;
+  std::string m_szVideoStreamType;
+  std::string m_szVideoStreamAddress;
+  bool m_openPrev;
 
   // For TF
   std::string m_szLabelPath;

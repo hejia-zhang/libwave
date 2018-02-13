@@ -1,5 +1,6 @@
 # produced file
 cmake-build-debug
+cmake-build-release
 data
 Doxyfile
 html

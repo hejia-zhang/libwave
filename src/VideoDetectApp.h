@@ -8,6 +8,9 @@
 #include "Poco/Util/ServerApplication.h"
 #include "CommonStruct.h"
 
+///
+/// This is the main application class
+///
 class VideoDetectApp : public Poco::Util::ServerApplication {
 public:
   VideoDetectApp();

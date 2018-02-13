@@ -4,9 +4,11 @@ cuda_add_executable(Goku ObjectDetectThread.cc VideoStreamDecodeThread.cc main.c
         VideoDetectApp CommonStruct.h ErrCode.h yuv2bgr.h
         ObjectDetectThread.h StringUtility.h NamedMutexScopedLock.h)
 
-target_link_libraries(Goku /usr/local/lib/libtensorflow_cc.so
-        /usr/local/lib/libtensorflow_framework.so ${PROTOBUF_LIBRARIES}
+target_link_libraries(Goku tensorflow_cc
+        tensorflow_framework ${PROTOBUF_LIBRARIES}
         avcodec avutil avdevice avfilter avformat swresample swscale postproc
-        pthread PocoNet PocoUtil PocoFoundation opencv_core opencv_cudev
-        opencv_photo opencv_shape opencv_video opencv_highgui opencv_imgproc
-        opencv_videoio opencv_core opencv_cudacodec opencv_cudev)
+        pthread PocoNet PocoUtil PocoFoundation /usr/local/lib/libopencv_core.so /usr/local/lib/libopencv_cudev.so
+        /usr/local/lib/libopencv_photo.so /usr/local/lib/libopencv_shape.so /usr/local/lib/libopencv_video.so
+        /usr/local/lib/libopencv_highgui.so /usr/local/lib/libopencv_imgproc.so
+        /usr/local/lib/libopencv_videoio.so /usr/local/lib/libopencv_core.so /usr/local/lib/libopencv_cudacodec.so
+        /usr/local/lib/libopencv_cudev.so /usr/local/lib/libopencv_imgcodecs.so)

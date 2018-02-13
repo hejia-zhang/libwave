@@ -1,8 +1,10 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.5.1)
 
 project(Goku)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+set(CUDA_TOOLKIT_ROOT_DIR /usr/local/cuda)
 
 # find packages
 find_package(Eigen3 REQUIRED)

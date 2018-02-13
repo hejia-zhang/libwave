@@ -89,6 +89,7 @@ bool VideoDetectApp::ParseVideoConfiguration() {
     m_config.m_szVideoStreamAddress = config().getString("video_stream_address");
     m_config.m_szVideoStreamType = config().getString("video_stream_type");
     m_config.m_szHwName = config().getString("hw_name");
+    m_config.m_openPrev = config().getBool("preview_open");
   } catch (Poco::NotFoundException) {
     logger().error("VideoDetectApp::ParseVideoConfiguration: Can't find some required parameters! "
                        "Please set your Video Process parameters in properties file completely!");
@@ -103,7 +104,7 @@ bool VideoDetectApp::ParseVideoConfiguration() {
 int VideoDetectApp::main(const std::vector<std::string> &args) {
   /// First we need to make sure there is only one process running
   /// in current
-  std::string strInstanceName = "VideoDetectDemo";
+  std::string strInstanceName = "Goku";
   Poco::NamedMutex mutex(strInstanceName);
   NamedMutexScopedLock lock(mutex);
 
@@ -120,7 +121,7 @@ int VideoDetectApp::main(const std::vector<std::string> &args) {
   /// Now we need to init RGB Process thread, TF Detector Thread, VideoProcessing thread
   /// First we will init TF Detector Thread
   ObjectDetectThread objectDetectThread(m_config, logger());
-  if (!objectDetectThread.Init()) {
+  if (RES_TF_OK != objectDetectThread.Init()) {
     logger().error("Failed to initialize objectDetectThread!");
     return EXIT_SOFTWARE;
   }
