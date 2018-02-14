@@ -87,9 +87,10 @@ bool VideoDetectApp::ParseVideoConfiguration() {
   try {
     m_config.m_nTolerableFrameProcessDely = config().getInt("tolerable_frame_delay");
     m_config.m_szVideoStreamAddress = config().getString("video_stream_address");
-    m_config.m_szVideoStreamType = config().getString("video_stream_type");
     m_config.m_szHwName = config().getString("hw_name");
     m_config.m_openPrev = config().getBool("preview_open");
+
+    m_config.m_bgpu_decode = config().getBool("gpu_decode");
 
     /// Check if we need to resize the input video image
     m_config.m_ifResize = config().getBool("flag_resized");

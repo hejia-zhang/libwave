@@ -67,7 +67,7 @@ VID_ERR VideoStreamDecodeThread::Connect() {
       break;
     }
 
-    // Try to find a stream
+    /// Try to find a stream
     if (avformat_find_stream_info(m_pFormatCtx, NULL) < 0) {
       m_logger.error(Poco::format("VideoStreamDecodeThread::Connect "
                                       "Can't find the stream info: %s", m_strStreamUrl));
@@ -85,7 +85,6 @@ VID_ERR VideoStreamDecodeThread::Connect() {
     }
 
     /// Try to configure for gpu decode
-    //m_pDecoder = avcodec_find_decoder_by_name("cuda");
     /// Check if hw type we specified is supported by this decoder
     for (int i = 0;;i++) {
       const AVCodecHWConfig *config = avcodec_get_hw_config(m_pDecoder, i);
@@ -213,7 +212,6 @@ void VideoStreamDecodeThread::run() {
           cudaMemcpy(pImg->imageData, resMat.data, resMat.cols *resMat.rows * sizeof(uchar3), cudaMemcpyDeviceToHost);
         }
         cv::Mat img = cv::cvarrToMat(pImg, true);
-        cv::imwrite("test.jpg", img);
         ImageFrame data(img);
         data.frameIdx = nFrameNum;
         m_frameCallback(data);

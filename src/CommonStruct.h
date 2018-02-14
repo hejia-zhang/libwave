@@ -32,10 +32,10 @@ struct AppConfig {
   // For video processing
   int m_nTolerableFrameProcessDely;
   std::string m_szHwName;
-  std::string m_szVideoStreamType;
   std::string m_szVideoStreamAddress;
   bool m_openPrev;
   bool m_ifResize;
+  bool m_bgpu_decode;
   int m_resizedWidth;
   int m_resizedHeight;
 

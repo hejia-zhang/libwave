@@ -257,7 +257,7 @@ void ObjectDetectThread::run() {
         int xmin = boxes(0, i, 1) * pWorkNf->m_frame.m_img.cols;
         int ymax = boxes(0, i, 2) * pWorkNf->m_frame.m_img.rows;
         int xmax = boxes(0, i, 3) * pWorkNf->m_frame.m_img.cols;
-        if (scores(i) > 0.9) {
+        if (scores(i) > 0.6) {
           m_logger.information(Poco::format("score: %d, class: %d box: [%d, %d, %d, %d]", int(scores(i) * 100), int(classes(i)),
                          ymin, xmin, ymax, xmax));
 
