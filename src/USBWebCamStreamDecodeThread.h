@@ -5,4 +5,10 @@
 #ifndef GOKU_USBWEBCAMSTREAMDECODETHREAD_H
 #define GOKU_USBWEBCAMSTREAMDECODETHREAD_H
 
+class USBWebCamStreamDecodeThread {
+public:
+  USBWebCamStreamDecodeThread() {
+
+  }
+};
 #endif //GOKU_USBWEBCAMSTREAMDECODETHREAD_H

@@ -5,7 +5,7 @@ cuda_add_executable(Goku ObjectDetectThread.cc VideoStreamDecodeThread.cc main.c
         ObjectDetectThread.h StringUtility.h NamedMutexScopedLock.h resizeImageGPU.cu resizeImageGPU.h
         VideoStreamDecodeThreadFactory.h VideoStreamDecodeThreadFactory.cc MP4VideoStreamDecodeThread.h
         MP4VideoStreamDecodeThread.cc RTSPStreamDecodeThread.cc RTSPStreamDecodeThread.h USBWebCamStreamDecodeThread.h
-        USBWebCamStreamDecodeThread.cc VideoDetectThread.cc VideoDetectThread.h)
+        USBWebCamStreamDecodeThread.cc VideoDecodeThread.cc VideoDecodeThread.h)
 
 target_link_libraries(Goku tensorflow_cc
         tensorflow_framework ${PROTOBUF_LIBRARIES}
