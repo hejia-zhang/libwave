@@ -18,3 +18,8 @@ void VideoDecodeThread::Exit() {
   m_stop = true;
   m_thread.join();
 }
+
+void VideoDecodeThread::Start(const FrameCBFunc &cb) {
+  m_frameCallback = cb;
+  m_thread.start(*this);
+}

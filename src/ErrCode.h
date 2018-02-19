@@ -21,6 +21,8 @@ enum VID_ERR {
   RES_VID_ERR_NOT_SUPPORT_DEVICE_TYPE = 5, // decoder does not support device type
   RES_VID_OPEN_DECODER = 6, // can't find decoder
   RES_VID_DEV_TYPE_NOT_SUPPORT = 7,
+  RES_VID_ERR_ALLOC_CODEC_CTX = 8,
+  RES_VID_ERR_COPY_CODEC_PAR = 9,
 };
 
 /// The error code in TF object detect.

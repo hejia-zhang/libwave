@@ -12,6 +12,8 @@
 #include "CommonStruct.h"
 #include "ErrCode.h"
 
+using FrameCBFunc = void(const ImageFrame&);
+
 class VideoDecodeThread : public Poco::Runnable, public Poco::RefCountedObject{
 public:
   typedef Poco::AutoPtr<VideoDecodeThread> Ptr;
@@ -20,7 +22,7 @@ public:
   virtual ~VideoDecodeThread();
 
   virtual void run() = 0;
-  virtual void Start() = 0;
+  virtual void Start(const FrameCBFunc& cb);
   virtual void Exit();
   virtual bool Init() = 0;
   virtual VID_ERR Connect() = 0;
@@ -30,6 +32,8 @@ protected:
   Poco::Logger& m_logger;
   bool m_stop = false;
   Poco::Thread m_thread;
+
+  std::function<FrameCBFunc> m_frameCallback;
 };
 
 #endif //GOKU_VIDEODETECTTHREAD_H
