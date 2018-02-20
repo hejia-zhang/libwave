@@ -4,9 +4,9 @@
 
 #include "VideoDetectApp.h"
 #include "NamedMutexScopedLock.h"
-#include "StringUtility.h"
 #include "VideoStreamDecodeThread.h"
 #include "ObjectDetectThread.h"
+#include "VideoStreamDecodeThreadFactory.h"
 
 VideoDetectApp::VideoDetectApp() {
 
@@ -91,6 +91,7 @@ bool VideoDetectApp::ParseVideoConfiguration() {
     m_config.m_openPrev = config().getBool("preview_open");
 
     m_config.m_bgpu_decode = config().getBool("gpu_decode");
+    m_config.m_videoType = config().getInt("video_stream_type");
 
     /// Check if we need to resize the input video image
     m_config.m_ifResize = config().getBool("flag_resized");
@@ -135,6 +136,18 @@ int VideoDetectApp::main(const std::vector<std::string> &args) {
   }
   objectDetectThread.Start();
 
+  /// Then we construct a Video Detect Thread Factory
+  VideoStreamDecodeThreadFactory videoStreamDecodeThreadFactory(m_config, logger());
+  VideoDecodeThread::Ptr pVideoDecodeThread =
+      videoStreamDecodeThreadFactory.MakeDecodeThread((VID_STREAM_TYPE)m_config.m_videoType);
+  if (!pVideoDecodeThread->Init()) {
+    logger().error("Failed to initialize VideoDecodeThread!");
+    return EXIT_SOFTWARE;
+  }
+  std::function<FrameCBFunc> cb = std::bind(&ObjectDetectThread::AddFrame, &objectDetectThread, std::placeholders::_1);
+  pVideoDecodeThread->Start(cb);
+
+  /*
   /// Then we will init VideoStreamDecodeThread
   VideoStreamDecodeThread videoStreamDecodeThread(m_config, logger());
   if (!videoStreamDecodeThread.Init()) {
@@ -143,6 +156,7 @@ int VideoDetectApp::main(const std::vector<std::string> &args) {
   }
   std::function<FrameCBFunc> cb = std::bind(&ObjectDetectThread::AddFrame, &objectDetectThread, std::placeholders::_1);
   videoStreamDecodeThread.Start(cb);
+   */
 
   /// wait for CTRL-C or kill
   waitForTerminationRequest();

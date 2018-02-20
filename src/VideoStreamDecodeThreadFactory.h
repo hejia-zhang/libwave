@@ -5,6 +5,9 @@
 #ifndef GOKU_VIDEOSTREAMDECODETHREADFACTORY_H
 #define GOKU_VIDEOSTREAMDECODETHREADFACTORY_H
 
+#include "VideoDecodeThread.h"
+#include "USBWebCamStreamDecodeThread.h"
+
 enum VID_STREAM_TYPE {
   MP4_VIDEO = 1,
   RTSP_STREAM = 2,
@@ -12,10 +15,16 @@ enum VID_STREAM_TYPE {
 };
 class VideoStreamDecodeThreadFactory {
 public:
-  VideoStreamDecodeThreadFactory();
-  virtual ~VideoStreamDecodeThreadFactory();
+  VideoStreamDecodeThreadFactory(const AppConfig& config, Poco::Logger& logger) : m_config(config), m_logger(logger)  {
+  }
+  virtual ~VideoStreamDecodeThreadFactory() {
+  }
 
-  void MakeThread(VID_STREAM_TYPE type);
+  VideoDecodeThread::Ptr MakeDecodeThread(VID_STREAM_TYPE type);
+
+private:
+  const AppConfig& m_config;
+  Poco::Logger& m_logger;
 };
 
 #endif //GOKU_VIDEOSTREAMDECODETHREADFACTORY_H

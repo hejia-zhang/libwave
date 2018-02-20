@@ -15,7 +15,12 @@ extern "C" {
 #include "libavutil/imgutils.h"
 #include "libavfilter/avfilter.h"
 #include "libavdevice/avdevice.h"
+#include "libswresample/swresample.h"
+#include "libswscale/swscale.h"
 }
+
+#include "yuv2bgr.h"
+#include "resizeImageGPU.h"
 
 #include "VideoDecodeThread.h"
 

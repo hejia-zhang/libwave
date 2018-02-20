@@ -1,5 +1,6 @@
-#include <Poco/Notification.h>
+#include "Poco/Notification.h"
 #include "ObjectDetectThread.h"
+#include "opencv2/core.hpp"
 
 /**************************************** These functions are used in TF *******************************************/
 tensorflow::Status ReadEntireFile(tensorflow::Env* env, const std::string& file_path, tensorflow::Tensor& output) {
@@ -114,6 +115,49 @@ tensorflow::Status LoadGraph(const std::string& graph_path, std::unique_ptr<tens
   }
   return tensorflow::Status::OK();
 }
+
+void ObjectDetectThread::load_lable_map(std::map<int, std::string>& labelMap, const std::string& label_map_path) {
+  std::ifstream fin(label_map_path);
+  std::string tmp_str = "";
+  std::string name = "";
+  std::string id = "";
+  std::string display_name = "";
+  while (getline(fin, tmp_str)) {
+    if (tmp_str.find("name") != tmp_str.npos) {
+      tmp_str = StringUtility::remove_the_delimiter(tmp_str, ' ');
+      tmp_str = StringUtility::remove_the_delimiter(tmp_str, '\t');
+      std::size_t begin = tmp_str.find('"', 0);
+      std::size_t end = tmp_str.find('"', begin + 1);
+      name = tmp_str.substr(begin + 1, end - begin - 1);
+      continue;
+    }
+    if (tmp_str.find("display_name") != tmp_str.npos) {
+      tmp_str = StringUtility::remove_the_delimiter(tmp_str, ' ');
+      tmp_str = StringUtility::remove_the_delimiter(tmp_str, '\t');
+      std::size_t begin = tmp_str.find('"', 0);
+      std::size_t end = tmp_str.find('"', begin + 1);
+      display_name = tmp_str.substr(begin + 1, end - begin - 1);
+      continue;
+    }
+    if (tmp_str.find("id") != tmp_str.npos) {
+      tmp_str = StringUtility::remove_the_delimiter(tmp_str, ' ');
+      tmp_str = StringUtility::remove_the_delimiter(tmp_str, '\t');
+      std::size_t begin = tmp_str.find(':', 0);
+      id = tmp_str.substr(begin + 1, tmp_str.size() - begin - 1);
+      continue;
+    }
+    if (tmp_str.find("}") != tmp_str.npos) {
+      if (!display_name.empty()) {
+        labelMap[std::stoi(id)] = display_name;
+      } else {
+        labelMap[std::stoi(id)] = name;
+      }
+      std::string name = "";
+      std::string id = "";
+      std::string display_name = "";
+    }
+  }
+}
 /****************************************************************************************************************/
 
 int ObjectDetectThread::Detect(const ImageFrame &imgFrame) {
@@ -207,6 +251,9 @@ TF_ERR ObjectDetectThread::Init() {
     return RES_TF_LOAD_GRAPH;
   }
 
+  /// Now Load Label map
+  load_lable_map(m_labelMap, m_config.m_szLabelPath);
+
   /// Open a new preview window
   if (m_config.m_openPrev) {
     cv::namedWindow("Preview");
@@ -257,15 +304,17 @@ void ObjectDetectThread::run() {
         int xmin = boxes(0, i, 1) * pWorkNf->m_frame.m_img.cols;
         int ymax = boxes(0, i, 2) * pWorkNf->m_frame.m_img.rows;
         int xmax = boxes(0, i, 3) * pWorkNf->m_frame.m_img.cols;
-        if (scores(i) > 0.6) {
+        if (scores(i) > 0.7) {
           m_logger.information(Poco::format("score: %d, class: %d box: [%d, %d, %d, %d]", int(scores(i) * 100), int(classes(i)),
                          ymin, xmin, ymax, xmax));
 
           /// Add a box on img
           /// Rect Rect_(_Tp _x, _Tp _y, _Tp _width, _Tp _height);
-          cv::rectangle(pWorkNf->m_frame.m_img, cv::Rect(xmin, ymin, xmax - xmin, ymax - ymin), cv::Scalar(0, 255, 0));
+          cv::rectangle(pWorkNf->m_frame.m_img, cv::Rect(xmin, ymin, xmax - xmin, ymax - ymin), cv::Scalar(0, 255, 0), 3);
+          cv::putText(pWorkNf->m_frame.m_img, m_labelMap[int(classes(i))],
+                      cv::Point(xmin, ymin), CV_FONT_HERSHEY_SCRIPT_SIMPLEX, 2, cv::Scalar(0, 255, 0), 3);
           ///cv::imshow("Preview", pWorkNf->m_frame.m_img);
-          break;
+          //break;
         }
       }
       /// show us the image

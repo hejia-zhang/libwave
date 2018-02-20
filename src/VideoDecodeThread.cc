@@ -19,7 +19,7 @@ void VideoDecodeThread::Exit() {
   m_thread.join();
 }
 
-void VideoDecodeThread::Start(const FrameCBFunc &cb) {
+void VideoDecodeThread::Start(const std::function<FrameCBFunc> &cb) {
   m_frameCallback = cb;
   m_thread.start(*this);
 }

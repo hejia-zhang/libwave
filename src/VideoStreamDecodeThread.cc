@@ -107,10 +107,6 @@ VID_ERR VideoStreamDecodeThread::Connect() {
 
     m_pVideo = m_pFormatCtx->streams[m_nVideoStreamIndex];
     avcodec_parameters_to_context(m_pDecoderCtx, m_pVideo->codecpar);
-    // m_pDecoderCtx->height = m_pFormatCtx->streams[m_nVideoStreamIndex]->codecpar->height;
-    // m_pDecoderCtx->width = m_pFormatCtx->streams[m_nVideoStreamIndex]->codecpar->width;
-    // m_pDecoderCtx->thread_type = 2;
-    // m_pDecoderCtx->get_format = get_hw_format;
     hw_decoder_init(m_pDecoderCtx, m_hwType);
 
     if (avcodec_open2(m_pDecoderCtx, m_pDecoder, NULL) < 0) {
@@ -119,7 +115,7 @@ VID_ERR VideoStreamDecodeThread::Connect() {
       break;
     }
   } while (false);
-  // If failed in connection, release the resources
+  /// If failed in connection, release the resources
   if (res != RES_VID_OK) {
     avformat_close_input(&m_pFormatCtx);
     if (m_pDecoderCtx) {
@@ -158,33 +154,26 @@ void VideoStreamDecodeThread::run() {
   Poco::Int64 nFrameNum = 0;
   int break_status = 0;
   bool is_first_time = true;
-  while (!m_stop)
-  {
-    if (av_read_frame(m_pFormatCtx, &packet) != 0)
-    {
+  while (!m_stop) {
+    if (av_read_frame(m_pFormatCtx, &packet) != 0) {
       m_bConnected = false;
       break_status = 1;
       break;
     }
 
-    if (packet.stream_index == m_nVideoStreamIndex)
-    {//packet is video
+    if (packet.stream_index == m_nVideoStreamIndex) {//packet is video
       int got_picture = 0;
-      int res = avcodec_decode_video2(m_pDecoderCtx, pYUVFrame, &got_picture, &packet); // TO DO use cuda
-      if (res >= 0 && got_picture)
-      {
+      int res = avcodec_decode_video2(m_pDecoderCtx, pYUVFrame, &got_picture, &packet);
+      if (res >= 0 && got_picture) {
         ++nFrameNum;
-        if (m_stop)
-        {
+        if (m_stop) {
           break_status = 2;
           break;
         }
         SharedIplImage pImg;
-        if (m_config.m_ifResize)
-        {
+        if (m_config.m_ifResize) {
           pImg = cvCreateImage(cvSize(m_config.m_resizedWidth, m_config.m_resizedHeight), 8, 3);
-        }
-        else {
+        } else {
           pImg = cvCreateImage(cvSize(m_pDecoderCtx->width, m_pDecoderCtx->height), 8, 3);
         }
         if (is_first_time) {
@@ -192,8 +181,7 @@ void VideoStreamDecodeThread::run() {
           reqMat.create(pYUVFrame->height, pYUVFrame->width, CV_8UC3);
           resMat.create(pYUVFrame->height, pYUVFrame->width, CV_8UC3);
           resMat.step = pBGRFrame->linesize[0];
-          if (m_config.m_ifResize)
-          {
+          if (m_config.m_ifResize) {
             resizedMat.create(m_config.m_resizedHeight, m_config.m_resizedWidth, CV_8UC3);
             resizedMat.step = m_config.m_resizedWidth * 3;
           }
@@ -204,8 +192,7 @@ void VideoStreamDecodeThread::run() {
         cudaMemcpy(reqMat.data, pYUVFrame->data[0], bufsize0, cudaMemcpyHostToDevice);
         cudaMemcpy(reqMat.data + bufsize0, pYUVFrame->data[1], bufsize1, cudaMemcpyHostToDevice);
         cvtColor(reqMat.data, resMat.data, resolution, pYUVFrame->height, pYUVFrame->width, pYUVFrame->linesize[0]);
-        if (m_config.m_ifResize)
-        {
+        if (m_config.m_ifResize) {
           resizeImageGPU(resizedMat.data, resMat.data, resizedMat.step, resMat.step, m_config.m_resizedHeight, m_config.m_resizedWidth, resMat.rows, resMat.cols);
           cudaMemcpy(pImg->imageData, resizedMat.data, resizedMat.cols * resizedMat.rows * sizeof(uchar3), cudaMemcpyDeviceToHost);
         } else {

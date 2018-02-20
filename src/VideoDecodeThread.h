@@ -22,7 +22,7 @@ public:
   virtual ~VideoDecodeThread();
 
   virtual void run() = 0;
-  virtual void Start(const FrameCBFunc& cb);
+  virtual void Start(const std::function<FrameCBFunc>& cb);
   virtual void Exit();
   virtual bool Init() = 0;
   virtual VID_ERR Connect() = 0;
@@ -32,6 +32,7 @@ protected:
   Poco::Logger& m_logger;
   bool m_stop = false;
   Poco::Thread m_thread;
+  bool m_bConnected = false;
 
   std::function<FrameCBFunc> m_frameCallback;
 };

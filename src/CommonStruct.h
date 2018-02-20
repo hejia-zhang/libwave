@@ -38,6 +38,7 @@ struct AppConfig {
   bool m_bgpu_decode;
   int m_resizedWidth;
   int m_resizedHeight;
+  int m_videoType;
 
   // For TF
   std::string m_szLabelPath;

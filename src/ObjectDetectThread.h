@@ -26,6 +26,7 @@
 #include "tensorflow/core/util/command_line_flags.h"
 #include "CommonStruct.h"
 #include "ErrCode.h"
+#include "StringUtility.h"
 
 using ResultCBFunc = void();
 
@@ -68,6 +69,9 @@ private:
   std::function<ResultCBFunc> m_cb;
   bool m_stop = false;
   Poco::NotificationQueue m_notiQueue;
+  std::map<int, std::string> m_labelMap;
+
+  void load_lable_map(std::map<int, std::string>& labelMap, const std::string& label_map_path);
 };
 
 #endif //VIDEODETECTDEMO_OBJECTDETECTOR_H

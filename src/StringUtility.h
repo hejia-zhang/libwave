@@ -12,7 +12,7 @@ namespace StringUtility {
   typedef std::string::size_type (std::string::*FuncFind)(const std::string& delim,
                                                           std::string::size_type offset) const;
 
-  std::vector<std::string> split(const std::string& srcstr, const std::string& delimeterStr,
+  static std::vector<std::string> split(const std::string& srcstr, const std::string& delimeterStr,
                                  bool removeEmpty=false, bool fullMatch=false) {
     std::vector<std::string> result;
     std::string::size_type t_startInd = 0;
@@ -47,7 +47,7 @@ namespace StringUtility {
     return result;
   }
 
-  std::string remove_the_delimiter(const std::string& srcstr, const char delimiter) {
+  static std::string remove_the_delimiter(const std::string& srcstr, const char delimiter) {
     std::vector<std::string> t_vecSubStrs;
     std::size_t t_begin = 0;
     std::size_t t_nLenSubStr = 0;
