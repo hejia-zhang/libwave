@@ -4,7 +4,6 @@
 
 #include "VideoDetectApp.h"
 #include "NamedMutexScopedLock.h"
-#include "VideoStreamDecodeThread.h"
 #include "ObjectDetectThread.h"
 #include "VideoStreamDecodeThreadFactory.h"
 
@@ -147,16 +146,16 @@ int VideoDetectApp::main(const std::vector<std::string> &args) {
   std::function<FrameCBFunc> cb = std::bind(&ObjectDetectThread::AddFrame, &objectDetectThread, std::placeholders::_1);
   pVideoDecodeThread->Start(cb);
 
-  /*
+
   /// Then we will init VideoStreamDecodeThread
-  VideoStreamDecodeThread videoStreamDecodeThread(m_config, logger());
-  if (!videoStreamDecodeThread.Init()) {
-    logger().error("Failed to initialize videoStreamDecodeThread!");
-    return EXIT_SOFTWARE;
-  }
-  std::function<FrameCBFunc> cb = std::bind(&ObjectDetectThread::AddFrame, &objectDetectThread, std::placeholders::_1);
-  videoStreamDecodeThread.Start(cb);
-   */
+//  MP4VideoStreamDecodeThread videoStreamDecodeThread(m_config, logger());
+//  if (!videoStreamDecodeThread.Init()) {
+//    logger().error("Failed to initialize videoStreamDecodeThread!");
+//    return EXIT_SOFTWARE;
+//  }
+//  std::function<FrameCBFunc> cb = std::bind(&ObjectDetectThread::AddFrame, &objectDetectThread, std::placeholders::_1);
+//  videoStreamDecodeThread.Start(cb);
+
 
   /// wait for CTRL-C or kill
   waitForTerminationRequest();

@@ -7,6 +7,7 @@
 
 #include "VideoDecodeThread.h"
 #include "USBWebCamStreamDecodeThread.h"
+#include "MP4VideoStreamDecodeThread.h"
 
 enum VID_STREAM_TYPE {
   MP4_VIDEO = 1,

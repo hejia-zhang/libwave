@@ -1,6 +1,6 @@
 project(DragonFly)
 
-cuda_add_executable(DragonFly ObjectDetectThread.cc VideoStreamDecodeThread.cc main.cc yuv2bgr.cu
+cuda_add_executable(DragonFly ObjectDetectThread.cc main.cc yuv2bgr.cu
         VideoDetectApp CommonStruct.h ErrCode.h yuv2bgr.h
         ObjectDetectThread.h StringUtility.h NamedMutexScopedLock.h resizeImageGPU.cu resizeImageGPU.h
         VideoStreamDecodeThreadFactory.h VideoStreamDecodeThreadFactory.cc MP4VideoStreamDecodeThread.h
