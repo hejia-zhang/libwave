@@ -1,5 +1,5 @@
 //
-// Created by hjzh on 18-2-11.
+// Created by hejia on 18-2-11.
 //
 
 #ifndef VIDEODETECTDEMO_NAMEDMUTEXSCOPEDLOCK_H

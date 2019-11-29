@@ -1,19 +1,19 @@
 //
-// Created by hjzh on 18-2-13.
+// Created by hejia on 18-2-13.
 //
 
-#include "MP4VideoStreamDecodeThread.h"
+#include "libvsd/VideoStreamDecoders/MP4VideoStreamDecoder.h"
 #include "yuv2bgr.h"
 #include "resizeImageGPU.h"
 
-bool MP4VideoStreamDecodeThread::Init() {
+bool MP4VideoStreamDecoder::Init() {
   bool res = true;
   m_strStreamUrl = m_config.m_szVideoStreamAddress;
   /// Try to find the hardware type according to hardware name we specified
   m_hwType = av_hwdevice_find_type_by_name(m_config.m_szHwName.c_str());
   if (AV_HWDEVICE_TYPE_NONE == m_hwType) {
-    m_logger.error("MP4VideoStreamDecodeThread::Init: "
-                       "Can't find the hardware type matches with the name we specified: %s", m_config.m_szHwName);
+    m_logger.error("MP4VideoDecoder::Init: "
+                   "Can't find the hardware type matches with the name we specified: %s", m_config.m_szHwName);
     return false;
   }
   av_register_all();
@@ -27,8 +27,7 @@ bool MP4VideoStreamDecodeThread::Init() {
   return res;
 }
 
-int MP4VideoStreamDecodeThread::hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type)
-{
+int MP4VideoStreamDecoder::hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type) {
   int err = 0;
 
   if ((err = av_hwdevice_ctx_create(&m_phwDevCtx, type,
@@ -41,9 +40,8 @@ int MP4VideoStreamDecodeThread::hw_decoder_init(AVCodecContext *ctx, const enum 
   return err;
 }
 
-enum AVPixelFormat MP4VideoStreamDecodeThread::get_hw_format(AVCodecContext *ctx,
-                                                          const enum AVPixelFormat *pix_fmts)
-{
+enum AVPixelFormat MP4VideoStreamDecoder::get_hw_format(AVCodecContext *ctx,
+                                                        const enum AVPixelFormat *pix_fmts) {
   const enum AVPixelFormat *p;
 
   for (p = pix_fmts; *p != -1; p++) {
@@ -55,22 +53,22 @@ enum AVPixelFormat MP4VideoStreamDecodeThread::get_hw_format(AVCodecContext *ctx
   return AV_PIX_FMT_NONE;
 }
 
-VID_ERR MP4VideoStreamDecodeThread::Connect() {
+VID_ERR MP4VideoStreamDecoder::Connect() {
   VID_ERR res = RES_VID_OK;
   do {
     /// Try to open input
     /// It is compatible with video and stream
     if (avformat_open_input(&m_pFormatCtx, m_strStreamUrl.c_str(), NULL, NULL) != 0) {
-      m_logger.error(Poco::format("MP4VideoStreamDecodeThread::Connect "
-                                      "Can't open the video stream with this address: %s", m_strStreamUrl));
+      m_logger.error(Poco::format("MP4VideoDecoder::Connect "
+                                  "Can't open the video stream with this address: %s", m_strStreamUrl));
       res = RES_VID_ERR_OPEN_INPUT;
       break;
     }
 
     /// Try to find a stream
     if (avformat_find_stream_info(m_pFormatCtx, NULL) < 0) {
-      m_logger.error(Poco::format("MP4VideoStreamDecodeThread::Connect "
-                                      "Can't find the stream info: %s", m_strStreamUrl));
+      m_logger.error(Poco::format("MP4VideoDecoder::Connect "
+                                  "Can't find the stream info: %s", m_strStreamUrl));
       res = RES_VID_ERR_FIND_STREAM_INFO;
       break;
     }
@@ -78,15 +76,15 @@ VID_ERR MP4VideoStreamDecodeThread::Connect() {
     /// Try to find the video stream
     m_nVideoStreamIndex = av_find_best_stream(m_pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, &m_pDecoder, 0);
     if (m_nVideoStreamIndex < 0) {
-      m_logger.error(Poco::format("MP4VideoStreamDecodeThread::Connect "
-                                      "Can't find the video stream: %s", m_strStreamUrl));
+      m_logger.error(Poco::format("MP4VideoDecoder::Connect "
+                                  "Can't find the video stream: %s", m_strStreamUrl));
       res = RES_VID_ERR_FIND_VIDEO_STREAM;
       break;
     }
 
     /// Try to configure for gpu decode
     /// Check if hw type we specified is supported by this decoder
-    for (int i = 0;;i++) {
+    for (int i = 0;; i++) {
       const AVCodecHWConfig *config = avcodec_get_hw_config(m_pDecoder, i);
       if (!config) {
         m_logger.error(Poco::format("Decoder %s does not support device type %s.",
@@ -127,23 +125,23 @@ VID_ERR MP4VideoStreamDecodeThread::Connect() {
   return res;
 }
 
-void MP4VideoStreamDecodeThread::Start(const std::function<FrameCBFunc> &cb) {
+void MP4VideoStreamDecoder::Start(const std::function<FrameCBFunc> &cb) {
   m_frameCallback = cb;
   m_thread.start(*this);
 }
 
-void MP4VideoStreamDecodeThread::Exit() {
+void MP4VideoStreamDecoder::Exit() {
   m_stop = true;
   m_thread.join();
 }
 
-void MP4VideoStreamDecodeThread::run() {
+void MP4VideoStreamDecoder::run() {
   AVFrame *pYUVFrame = av_frame_alloc();
   AVFrame *pBGRFrame = av_frame_alloc();
   AVPacket packet;
   int align = 32;
   int buffer_size = av_image_get_buffer_size(AV_PIX_FMT_BGR24, m_pDecoderCtx->width, m_pDecoderCtx->height, align);
-  unsigned char* buffer = (unsigned char*)(av_malloc(buffer_size * sizeof(uint8_t)));
+  unsigned char *buffer = (unsigned char *) (av_malloc(buffer_size * sizeof(uint8_t)));
   av_image_fill_arrays(pBGRFrame->data, pBGRFrame->linesize, buffer, AV_PIX_FMT_BGR24, m_pDecoderCtx->width,
                        m_pDecoderCtx->height, align);
 
@@ -193,10 +191,20 @@ void MP4VideoStreamDecodeThread::run() {
         cudaMemcpy(reqMat.data + bufsize0, pYUVFrame->data[1], bufsize1, cudaMemcpyHostToDevice);
         cvtColor(reqMat.data, resMat.data, resolution, pYUVFrame->height, pYUVFrame->width, pYUVFrame->linesize[0]);
         if (m_config.m_ifResize) {
-          resizeImageGPU(resizedMat.data, resMat.data, resizedMat.step, resMat.step, m_config.m_resizedHeight, m_config.m_resizedWidth, resMat.rows, resMat.cols);
-          cudaMemcpy(pImg->imageData, resizedMat.data, resizedMat.cols * resizedMat.rows * sizeof(uchar3), cudaMemcpyDeviceToHost);
+          resizeImageGPU(resizedMat.data,
+                         resMat.data,
+                         resizedMat.step,
+                         resMat.step,
+                         m_config.m_resizedHeight,
+                         m_config.m_resizedWidth,
+                         resMat.rows,
+                         resMat.cols);
+          cudaMemcpy(pImg->imageData,
+                     resizedMat.data,
+                     resizedMat.cols * resizedMat.rows * sizeof(uchar3),
+                     cudaMemcpyDeviceToHost);
         } else {
-          cudaMemcpy(pImg->imageData, resMat.data, resMat.cols *resMat.rows * sizeof(uchar3), cudaMemcpyDeviceToHost);
+          cudaMemcpy(pImg->imageData, resMat.data, resMat.cols * resMat.rows * sizeof(uchar3), cudaMemcpyDeviceToHost);
         }
         cv::Mat img = cv::cvarrToMat(pImg, true);
         ImageFrame data(img);

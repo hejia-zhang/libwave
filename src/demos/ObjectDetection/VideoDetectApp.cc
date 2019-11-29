@@ -1,11 +1,11 @@
 //
-// Created by hjzh on 18-2-6.
+// Created by hejia on 18-2-6.
 //
 
 #include "VideoDetectApp.h"
-#include "NamedMutexScopedLock.h"
+#include "../../../inc/libvsd/NamedMutexScopedLock.h"
 #include "ObjectDetectThread.h"
-#include "VideoStreamDecodeThreadFactory.h"
+#include "../../../inc/VideoStreamDecoders/VideoStreamDecoderFactory.h"
 
 VideoDetectApp::VideoDetectApp() {
 
@@ -24,7 +24,7 @@ bool VideoDetectApp::ParseConfiguration() {
   return res;
 }
 
-bool VideoDetectApp::GetOutputLayers(const std::string& szOutLayers, std::vector<std::string>& outputlayers) {
+bool VideoDetectApp::GetOutputLayers(const std::string &szOutLayers, std::vector<std::string> &outputlayers) {
   /// The string format outlayers should look like
   /// "[detection_boxes:0", "detection_scores:0", "detection_classes:0", "num_detections:0]"
   std::size_t t_beginPos = 0;
@@ -71,9 +71,10 @@ bool VideoDetectApp::ParseTFConfiguration() {
       res = false;
     }
   } catch (Poco::NotFoundException) {
-    logger().error("VideoDetectApp::ParseTFConfiguration: Can't find some required parameters! Please set your TF parameters in properties file completely!");
+    logger().error(
+        "VideoDetectApp::ParseTFConfiguration: Can't find some required parameters! Please set your TF parameters in properties file completely!");
     res = false;
-  } catch (const std::exception& e) {
+  } catch (const std::exception &e) {
     logger().error("VideoDetectApp::ParseTFConfiguration: Some errors happended");
     res = false;
   }
@@ -100,9 +101,9 @@ bool VideoDetectApp::ParseVideoConfiguration() {
     }
   } catch (Poco::NotFoundException) {
     logger().error("VideoDetectApp::ParseVideoConfiguration: Can't find some required parameters! "
-                       "Please set your Video Process parameters in properties file completely!");
+                   "Please set your Video Process parameters in properties file completely!");
     res = false;
-  } catch (const std::exception& e) {
+  } catch (const std::exception &e) {
     logger().error("VideoDetectApp::ParseVideoConfiguration: Some errors happended");
     res = false;
   }
@@ -112,12 +113,13 @@ bool VideoDetectApp::ParseVideoConfiguration() {
 int VideoDetectApp::main(const std::vector<std::string> &args) {
   /// First we need to make sure there is only one process running
   /// in current
-  std::string strInstanceName = "Goku";
+  std::string strInstanceName = "libvsd_object_detection";
   Poco::NamedMutex mutex(strInstanceName);
   NamedMutexScopedLock lock(mutex);
 
   if (!lock.tryLock()) {
-    logger().error("There is one running Goku instance! Only one instance is permitted to run! Kill it first!");
+    logger().error(
+        "There is one running libvsd_object_detection instance! Only one instance is permitted to run! Kill it first!");
     return EXIT_OK;
   }
 
@@ -138,7 +140,7 @@ int VideoDetectApp::main(const std::vector<std::string> &args) {
   /// Then we construct a Video Detect Thread Factory
   VideoStreamDecodeThreadFactory videoStreamDecodeThreadFactory(m_config, logger());
   VideoDecodeThread::Ptr pVideoDecodeThread =
-      videoStreamDecodeThreadFactory.MakeDecodeThread((VID_STREAM_TYPE)m_config.m_videoType);
+      videoStreamDecodeThreadFactory.MakeDecodeThread((VID_STREAM_TYPE) m_config.m_videoType);
   if (!pVideoDecodeThread->Init()) {
     logger().error("Failed to initialize VideoDecodeThread!");
     return EXIT_SOFTWARE;

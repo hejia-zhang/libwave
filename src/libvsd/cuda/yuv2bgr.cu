@@ -9,7 +9,7 @@
 #include <cuda_runtime.h>
 #include <cuda_profiler_api.h>
 #include <curand.h>
-#include "yuv2bgr.h"
+#include "../VideoStreamDecoders/yuv2bgr.h"
 #include <device_launch_parameters.h>
 
 __global__ void

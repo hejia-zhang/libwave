@@ -1,5 +1,5 @@
 //
-// Created by hjzh on 18-2-6.
+// Created by hejia on 18-2-6.
 //
 
 #include "VideoDetectApp.h"

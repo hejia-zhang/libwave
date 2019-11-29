@@ -1,4 +1,4 @@
-#include "resizeImageGPU.h"
+#include "../VideoStreamDecoders/resizeImageGPU.h"
 #include "device_launch_parameters.h"
 
 __global__ void kernel(unsigned char* d_res, const unsigned char* d_req, int n_resStep,

@@ -1,44 +1,43 @@
 //
-// Created by hjzh on 18-2-13.
+// Created by hejia on 18-2-13.
 //
 
-#ifndef GOKU_MP4VIDEOSTREAMDECODETHREAD_H
-#define GOKU_MP4VIDEOSTREAMDECODETHREAD_H
+#ifndef MP4VIDEOSTREAMDECODER_H
+#define MP4VIDEOSTREAMDECODER_H
 
 
 extern "C" {
-#include "libavcodec/avcodec.h"
-#include "libavformat/avformat.h"
-#include "libavutil/pixdesc.h"
-#include "libavutil/hwcontext.h"
-#include "libavutil/opt.h"
-#include "libavutil/avassert.h"
-#include "libavutil/imgutils.h"
-#include "libavfilter/avfilter.h"
-#include "libavdevice/avdevice.h"
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libavutil/pixdesc.h>
+#include <libavutil/hwcontext.h>
+#include <libavutil/opt.h>
+#include <libavutil/avassert.h>
+#include <libavutil/imgutils.h>
+#include <libavfilter/avfilter.h>
+#include <libavdevice/avdevice.h>
 }
 
 #include <string>
-#include "ErrCode.h"
 
 // For Poco
-#include "Poco/AutoPtr.h"
-#include "Poco/Delegate.h"
-#include "Poco/Runnable.h"
-#include "Poco/Thread.h"
-#include "Poco/RefCountedObject.h"
-#include "Poco/Logger.h"
-#include "Poco/Timer.h"
+#include <Poco/AutoPtr.h>
+#include <Poco/Delegate.h>
+#include <Poco/Runnable.h>
+#include <Poco/Thread.h>
+#include <Poco/RefCountedObject.h>
+#include <Poco/Logger.h>
+#include <Poco/Timer.h>
 
-#include "CommonStruct.h"
-
-#include "VideoDecodeThread.h"
+#include "libvsd/CommonStruct.h"
+#include "libvsd/ErrCode.h"
+#include "VideoStreamDecoder.h"
 
 ///
 /// This is a video stream decode thread class
 ///
 ///
-class MP4VideoStreamDecodeThread : public VideoDecodeThread {
+class MP4VideoStreamDecoder : public VideoStreamDecoder {
 public:
   /// The function to start the thread
   /// \param cb
@@ -49,9 +48,9 @@ public:
   /// The constructor function
   /// \param config
   /// \param logger
-  MP4VideoStreamDecodeThread(const AppConfig& config, Poco::Logger& logger) : VideoDecodeThread(config, logger) {
+  MP4VideoStreamDecoder(const AppConfig& config, Poco::Logger& logger) : VideoStreamDecoder(config, logger) {
   }
-  virtual ~MP4VideoStreamDecodeThread() {
+  virtual ~MP4VideoStreamDecoder() {
     if (m_thread.isRunning()) {
       Exit();
     }
@@ -92,4 +91,4 @@ private:
   int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type);
 };
 
-#endif //GOKU_MP4VIDEOSTREAMDECODETHREAD_H
+#endif // MP4VIDEOSTREAMDECODER_H

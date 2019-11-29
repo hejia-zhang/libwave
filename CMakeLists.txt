@@ -14,10 +14,14 @@ set(PROTOBUF_INCLUDE_DIRS /usr/local/include/google)
 
 set(PROTOBUF_LIBRARIES /usr/local/lib/libprotobuf.so)
 
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
+
+include_directories(include)
+
 include_directories(/usr/local/include/google/tensorflow
                     ${PROTOBUF_INCLUDE_DIRS}
                     ${EIGEN3_INCLUDE_DIRS}
-                    /home/hjzh/Library_Sources/3rd_library/tensorflow/bazel-tensorflow/external/nsync/public
+                    /home/hejia/Library_Sources/3rd_library/tensorflow/bazel-tensorflow/external/nsync/public
                     /usr/local/include
                     /usr/local/cuda/include)
 

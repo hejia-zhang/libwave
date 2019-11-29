@@ -1,5 +1,5 @@
 //
-// Created by hjzh on 18-2-11.
+// Created by hejia on 18-2-11.
 //
 /// The file consists of a lot of string processing functions
 

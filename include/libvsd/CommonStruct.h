@@ -1,11 +1,11 @@
 //
-// Created by hjzh on 18-2-6.
+// Created by hejia on 18-2-6.
 //
 
 #ifndef VIDEODETECTDEMO_COMMONSTRUCT_H
 #define VIDEODETECTDEMO_COMMONSTRUCT_H
-#include "opencv2/opencv.hpp"
-#include "Poco/SharedPtr.h"
+#include <opencv2/opencv.hpp>
+#include <Poco/SharedPtr.h>
 
 // The release policy for SharedPtr holding arrays
 class ReleaseIplImagePolicy {
