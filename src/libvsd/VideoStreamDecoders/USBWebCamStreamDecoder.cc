@@ -100,53 +100,52 @@ VID_ERR USBWebCamStreamDecoder::Connect() {
   do {
     /// Open USB Web video stream, and allocate format context
     if (avformat_open_input(&m_pFormatCtx, m_config.m_szVideoStreamAddress.c_str(), NULL, NULL) < 0) {
-      m_logger.error(Poco::format("USBWebCamStreamDecoder::Connect "
-                                  "Can't open the video stream with this address: %s",
-                                  m_config.m_szVideoStreamAddress));
-      res = RES_VID_ERR_OPEN_INPUT;
-      break;
+      std::stringstream message;
+      message << "USBWebCamStreamDecoder::Connect "
+                 "Can't open the video stream with this address: " << m_config.m_szVideoStreamAddress;
+      throw std::runtime_error(message.str());
     }
 
     /// Try to find a stream
     if (avformat_find_stream_info(m_pFormatCtx, NULL) < 0) {
-      m_logger.error(Poco::format("USBWebCamStreamDecoder::Connect "
-                                  "Can't find the stream info: %s", m_config.m_szVideoStreamAddress));
-      res = RES_VID_ERR_FIND_STREAM_INFO;
-      break;
+      std::stringstream message;
+      message << "USBWebCamStreamDecoder::Connect "
+                 "Can't find the stream info: " << m_config.m_szVideoStreamAddress;
+      throw std::runtime_error(message.str());
     }
 
     /// Try to find the video stream
     m_nVideoStreamIndex = av_find_best_stream(m_pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, &m_pDecoder, 0);
     if (m_nVideoStreamIndex < 0) {
-      m_logger.error(Poco::format("USBWebCamStreamDecoder::Connect "
-                                  "Can't find the video stream: %s", m_config.m_szVideoStreamAddress));
-      res = RES_VID_ERR_FIND_VIDEO_STREAM;
-      break;
+      std::stringstream message;
+      message << "USBWebCamStreamDecoder::Connect "
+                 "Can't find the video stream: " << m_config.m_szVideoStreamAddress;
+      throw std::runtime_error(message.str());
     }
 
     m_pDecoderCtx = avcodec_alloc_context3(m_pDecoder);
     if (!m_pDecoderCtx) {
-      m_logger.error(Poco::format("USBWebCamStreamDecoder::Connect Failed to allocate the %s codec context",
-                                  av_get_media_type_string(AVMEDIA_TYPE_VIDEO)));
-      res = RES_VID_ERR_ALLOC_CODEC_CTX;
-      break;
+      std::stringstream message;
+      message << "USBWebCamStreamDecoder::Connect Failed to allocate the"
+              << av_get_media_type_string(AVMEDIA_TYPE_VIDEO) << "codec context";
+      throw std::runtime_error(message.str());
     }
 
     m_pVideo = m_pFormatCtx->streams[m_nVideoStreamIndex];
 
     /// Copy codec parameters from input stream to output codec context
     if (avcodec_parameters_to_context(m_pDecoderCtx, m_pVideo->codecpar) < 0) {
-      m_logger.error(Poco::format("USBWebCamStreamDecoder::Connect failed to copy %s codec "
-                                  "parameters to decoder context", av_get_media_type_string(AVMEDIA_TYPE_VIDEO)));
-      res = RES_VID_ERR_COPY_CODEC_PAR;
-      break;
+      std::stringstream message;
+      message << "USBWebCamStreamDecoder::Connect failed to copy " << av_get_media_type_string(AVMEDIA_TYPE_VIDEO)
+              << " codec parameters to decoder context";
+      throw std::runtime_error(message.str());
     }
 
     /// Init the decoders
     if (avcodec_open2(m_pDecoderCtx, m_pDecoder, NULL) < 0) {
-      m_logger.error(Poco::format("USBWebCamStreamDecoder::Connect Can't open decoder: %s", m_pDecoder->name));
-      res = RES_VID_OPEN_DECODER;
-      break;
+      std::stringstream message;
+      message << "USBWebCamStreamDecoder::Connect Can't open decoder: " << m_pDecoder->name;
+      throw std::runtime_error(message.str());
     }
   } while (false);
   /// If failed in connection, release the resources

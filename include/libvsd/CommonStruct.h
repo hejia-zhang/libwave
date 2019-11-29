@@ -9,7 +9,7 @@
 
 // The release policy for SharedPtr holding arrays
 class ReleaseIplImagePolicy {
-public:
+ public:
   static void release(IplImage *pImg) {
     // Delete the object
     // Note that pObj can be 0;
@@ -23,7 +23,7 @@ struct ImageFrame {
   cv::Mat m_img;
   Poco::Int64 frameIdx;
   ImageFrame() : ImageFrame(cv::Mat()) {}
-  ImageFrame(const cv::Mat& img) : m_img(img) {
+  ImageFrame(const cv::Mat &img) : m_img(img) {
     frameIdx = 0;
   }
 };
@@ -38,12 +38,6 @@ struct AppConfig {
   bool m_bgpu_decode;
   int m_resizedWidth;
   int m_resizedHeight;
-  int m_videoType;
-
-  // For TF
-  std::string m_szLabelPath;
-  std::string m_szGraphPath;
-  std::string m_szInputLayer;
-  std::vector<std::string> m_vecOutputLayers;
+  int m_streamType;
 };
 #endif //VIDEODETECTDEMO_COMMONSTRUCT_H

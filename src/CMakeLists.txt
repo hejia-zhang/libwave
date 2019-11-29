@@ -16,6 +16,4 @@
 
 add_subdirectory(libvsd)
 
-if (BUILD_DEMOS)
-      add_subdirectory(demos)
-endif()
+add_subdirectory(demos)

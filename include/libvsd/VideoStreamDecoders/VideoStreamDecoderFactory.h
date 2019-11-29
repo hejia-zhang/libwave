@@ -2,8 +2,8 @@
 // Created by hejia on 18-2-13.
 //
 
-#ifndef GOKU_VIDEOSTREAMDECODETHREADFACTORY_H
-#define GOKU_VIDEOSTREAMDECODETHREADFACTORY_H
+#ifndef VIDEOSTREAMDECODERFACTORY_H
+#define VIDEOSTREAMDECODERFACTORY_H
 
 #include "VideoStreamDecoder.h"
 #include "USBWebCamStreamDecoder.h"
@@ -15,17 +15,16 @@ enum VID_STREAM_TYPE {
   USB_WEBCAM = 3,
 };
 class VideoStreamDecoderFactory {
-public:
-  VideoStreamDecoderFactory(const AppConfig& config, Poco::Logger& logger) : m_config(config), m_logger(logger)  {
+ public:
+  VideoStreamDecoderFactory(const AppConfig &config) : m_config(config) {
   }
   virtual ~VideoStreamDecoderFactory() {
   }
 
   VideoStreamDecoder::Ptr MakeStreamDecoder(VID_STREAM_TYPE type);
 
-private:
-  const AppConfig& m_config;
-  Poco::Logger& m_logger;
+ private:
+  const AppConfig &m_config;
 };
 
-#endif //GOKU_VIDEOSTREAMDECODETHREADFACTORY_H
+#endif //VIDEOSTREAMDECODERFACTORY_H

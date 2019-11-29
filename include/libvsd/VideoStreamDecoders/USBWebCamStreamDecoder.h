@@ -23,7 +23,7 @@ extern "C" {
 
 class USBWebCamStreamDecoder : public VideoStreamDecoder {
 public:
-  USBWebCamStreamDecoder(const AppConfig& config, Poco::Logger& logger) : VideoStreamDecoder(config, logger) {
+  USBWebCamStreamDecoder(const AppConfig& config) : VideoStreamDecoder(config) {
   }
 
   virtual ~USBWebCamStreamDecoder() {

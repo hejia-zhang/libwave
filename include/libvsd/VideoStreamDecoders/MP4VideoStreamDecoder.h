@@ -48,7 +48,7 @@ public:
   /// The constructor function
   /// \param config
   /// \param logger
-  MP4VideoStreamDecoder(const AppConfig& config, Poco::Logger& logger) : VideoStreamDecoder(config, logger) {
+  MP4VideoStreamDecoder(const AppConfig& config) : VideoStreamDecoder(config) {
   }
   virtual ~MP4VideoStreamDecoder() {
     if (m_thread.isRunning()) {

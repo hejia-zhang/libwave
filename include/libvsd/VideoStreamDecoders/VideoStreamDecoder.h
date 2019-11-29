@@ -19,18 +19,17 @@ class VideoStreamDecoder : public Poco::Runnable, public Poco::RefCountedObject 
  public:
   typedef Poco::AutoPtr<VideoStreamDecoder> Ptr;
 
-  VideoStreamDecoder(const AppConfig &config, Poco::Logger &logger);
+  VideoStreamDecoder(const AppConfig &config);
   virtual ~VideoStreamDecoder();
 
   virtual void run() = 0;
-  virtual void Start(const std::function<FrameCBFunc> &cb);
+  virtual void Start(const std::function<FrameCBFunc> &cb = std::function<FrameCBFunc>());
   virtual void Exit();
   virtual bool Init() = 0;
   virtual VID_ERR Connect() = 0;
 
  protected:
   const AppConfig &m_config;
-  Poco::Logger &m_logger;
   bool m_stop = false;
   Poco::Thread m_thread;
   bool m_bConnected = false;

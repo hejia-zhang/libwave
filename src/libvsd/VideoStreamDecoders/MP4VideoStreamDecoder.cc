@@ -12,9 +12,10 @@ bool MP4VideoStreamDecoder::Init() {
   /// Try to find the hardware type according to hardware name we specified
   m_hwType = av_hwdevice_find_type_by_name(m_config.m_szHwName.c_str());
   if (AV_HWDEVICE_TYPE_NONE == m_hwType) {
-    m_logger.error("MP4VideoDecoder::Init: "
-                   "Can't find the hardware type matches with the name we specified: %s", m_config.m_szHwName);
-    return false;
+    std::stringstream message;
+    message << "MP4VideoDecoder::Init: "
+               "Can't find the hardware type matches with the name we specified: " << m_config.m_szHwName;
+    throw std::runtime_error(message.str());
   }
   av_register_all();
   avcodec_register_all();
@@ -32,8 +33,9 @@ int MP4VideoStreamDecoder::hw_decoder_init(AVCodecContext *ctx, const enum AVHWD
 
   if ((err = av_hwdevice_ctx_create(&m_phwDevCtx, type,
                                     NULL, NULL, 0)) < 0) {
-    m_logger.error("Failed to create specified HW device.");
-    return err;
+    std::stringstream message;
+    message << "Failed to create specified HW device.";
+    throw std::runtime_error(message.str());
   }
   ctx->hw_device_ctx = av_buffer_ref(m_phwDevCtx);
 
@@ -49,7 +51,10 @@ enum AVPixelFormat MP4VideoStreamDecoder::get_hw_format(AVCodecContext *ctx,
       return *p;
   }
 
-  m_logger.error("Failed to get HW surface format.");
+  std::stringstream message;
+  message << "Failed to get HW surface format.";
+  throw std::runtime_error(message.str());
+
   return AV_PIX_FMT_NONE;
 }
 
@@ -59,27 +64,27 @@ VID_ERR MP4VideoStreamDecoder::Connect() {
     /// Try to open input
     /// It is compatible with video and stream
     if (avformat_open_input(&m_pFormatCtx, m_strStreamUrl.c_str(), NULL, NULL) != 0) {
-      m_logger.error(Poco::format("MP4VideoDecoder::Connect "
-                                  "Can't open the video stream with this address: %s", m_strStreamUrl));
-      res = RES_VID_ERR_OPEN_INPUT;
-      break;
+      std::stringstream message;
+      message << "MP4VideoDecoder::Connect "
+                 "Can't open the video stream with this address: " << m_strStreamUrl;
+      throw std::runtime_error(message.str());
     }
 
     /// Try to find a stream
     if (avformat_find_stream_info(m_pFormatCtx, NULL) < 0) {
-      m_logger.error(Poco::format("MP4VideoDecoder::Connect "
-                                  "Can't find the stream info: %s", m_strStreamUrl));
-      res = RES_VID_ERR_FIND_STREAM_INFO;
-      break;
+      std::stringstream message;
+      message << "MP4VideoDecoder::Connect "
+                 "Can't find the stream info: " << m_strStreamUrl;
+      throw std::runtime_error(message.str());
     }
 
     /// Try to find the video stream
     m_nVideoStreamIndex = av_find_best_stream(m_pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, &m_pDecoder, 0);
     if (m_nVideoStreamIndex < 0) {
-      m_logger.error(Poco::format("MP4VideoDecoder::Connect "
-                                  "Can't find the video stream: %s", m_strStreamUrl));
-      res = RES_VID_ERR_FIND_VIDEO_STREAM;
-      break;
+      std::stringstream message;
+      message << "MP4VideoDecoder::Connect "
+                 "Can't find the video stream: " << m_strStreamUrl;
+      throw std::runtime_error(message.str());
     }
 
     /// Try to configure for gpu decode
@@ -87,10 +92,10 @@ VID_ERR MP4VideoStreamDecoder::Connect() {
     for (int i = 0;; i++) {
       const AVCodecHWConfig *config = avcodec_get_hw_config(m_pDecoder, i);
       if (!config) {
-        m_logger.error(Poco::format("Decoder %s does not support device type %s.",
-                                    m_pDecoder->name, av_hwdevice_get_type_name(m_hwType)));
-        res = RES_VID_DEV_TYPE_NOT_SUPPORT;
-        break;
+        std::stringstream message;
+        message << "Decoder" << m_pDecoder->name << "does not support device type "
+                << av_hwdevice_get_type_name(m_hwType) << ".";
+        throw std::runtime_error(message.str());
       }
       if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX && config->device_type == m_hwType) {
         m_hwPixFmt = config->pix_fmt;
@@ -108,9 +113,9 @@ VID_ERR MP4VideoStreamDecoder::Connect() {
     hw_decoder_init(m_pDecoderCtx, m_hwType);
 
     if (avcodec_open2(m_pDecoderCtx, m_pDecoder, NULL) < 0) {
-      m_logger.error(Poco::format("Can't open decoder: %s", m_pDecoder->name));
-      res = RES_VID_OPEN_DECODER;
-      break;
+      std::stringstream message;
+      message << "Can't open decoder: " << m_pDecoder->name;
+      throw std::runtime_error(message.str());
     }
   } while (false);
   /// If failed in connection, release the resources

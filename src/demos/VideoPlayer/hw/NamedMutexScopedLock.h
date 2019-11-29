@@ -8,8 +8,8 @@
 #include "Poco/NamedMutex.h"
 
 class NamedMutexScopedLock {
-public:
-  explicit NamedMutexScopedLock(Poco::NamedMutex& mutex): _mutex(mutex) {
+ public:
+  explicit NamedMutexScopedLock(Poco::NamedMutex &mutex) : _mutex(mutex) {
 
   }
 
@@ -25,11 +25,11 @@ public:
     _mutex.unlock();
   }
 
-private:
-  Poco::NamedMutex& _mutex;
+ private:
+  Poco::NamedMutex &_mutex;
 
   NamedMutexScopedLock() = delete;
-  NamedMutexScopedLock(const NamedMutexScopedLock&) = delete;
-  NamedMutexScopedLock& operator= (const NamedMutexScopedLock&);
+  NamedMutexScopedLock(const NamedMutexScopedLock &) = delete;
+  NamedMutexScopedLock &operator=(const NamedMutexScopedLock &);
 };
 #endif //VIDEODETECTDEMO_NAMEDMUTEXSCOPEDLOCK_H

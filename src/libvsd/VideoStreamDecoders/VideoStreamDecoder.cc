@@ -4,8 +4,8 @@
 
 #include "libvsd/VideoStreamDecoders/VideoStreamDecoder.h"
 
-VideoStreamDecoder::VideoStreamDecoder(const AppConfig &config, Poco::Logger &logger) :
-    m_config(config), m_logger(logger) {
+VideoStreamDecoder::VideoStreamDecoder(const AppConfig &config) :
+    m_config(config){
 }
 
 VideoStreamDecoder::~VideoStreamDecoder() {
