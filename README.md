@@ -1,2 +1,2 @@
-# DragonFly
-This project is for embeded robot vision system
+# libvsd
+C++ library for hardware-accelerated video stream decoding
