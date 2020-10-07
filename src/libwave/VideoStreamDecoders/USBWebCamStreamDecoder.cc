@@ -2,7 +2,7 @@
 // Created by hejia on 18-2-13.
 //
 
-#include "libvsd/VideoStreamDecoders/USBWebCamStreamDecoder.h"
+#include "libwave/VideoStreamDecoders/USBWebCamStreamDecoder.h"
 
 void USBWebCamStreamDecoder::run() {
   AVFrame *pYUVFrame = av_frame_alloc();

@@ -29,8 +29,8 @@ extern "C" {
 #include <Poco/Logger.h>
 #include <Poco/Timer.h>
 
-#include "libvsd/CommonStruct.h"
-#include "libvsd/ErrCode.h"
+#include "libwave/CommonStruct.h"
+#include "libwave/ErrCode.h"
 #include "VideoStreamDecoder.h"
 
 ///

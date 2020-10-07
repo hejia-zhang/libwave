@@ -2,7 +2,7 @@
 // Created by hejia on 18-2-13.
 //
 
-#include "libvsd/VideoStreamDecoders/VideoStreamDecoderFactory.h"
+#include "libwave/VideoStreamDecoders/VideoStreamDecoderFactory.h"
 
 VideoStreamDecoder::Ptr VideoStreamDecoderFactory::MakeStreamDecoder(VID_STREAM_TYPE type) {
   VideoStreamDecoder::Ptr ret;

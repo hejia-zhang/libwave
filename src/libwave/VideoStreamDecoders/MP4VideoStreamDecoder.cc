@@ -2,7 +2,7 @@
 // Created by hejia on 18-2-13.
 //
 
-#include "libvsd/VideoStreamDecoders/MP4VideoStreamDecoder.h"
+#include "libwave/VideoStreamDecoders/MP4VideoStreamDecoder.h"
 #include "yuv2bgr.h"
 #include "resizeImageGPU.h"
 
