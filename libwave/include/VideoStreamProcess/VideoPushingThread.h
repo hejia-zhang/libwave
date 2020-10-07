@@ -6,9 +6,9 @@
 #include <Poco/Logger.h>
 #include "Poco/NotificationQueue.h"
 
-#include "../../libwave/include/CommonStruct.h"
-#include "../../libwave/include/ErrCode.h"
-#include "../../libwave/include/StringUtility.h"
+#include "CommonStruct.h"
+#include "ErrCode.h"
+#include "StringUtility.h"
 
 class VideoPushingThread : public Poco::Runnable, public Poco::RefCountedObject {
  public:
@@ -28,7 +28,7 @@ class VideoPushingThread : public Poco::Runnable, public Poco::RefCountedObject 
   void Exit();
 
  protected:
-  void run() override;
+  virtual void run() override;
 
  public:
 

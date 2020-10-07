@@ -2,6 +2,8 @@
 #include "VideoStreamingServerApp.h"
 #include "VideoStreamDecoders/USBWebCamStreamDecoder.h"
 #include "NamedMutexScopedLock.h"
+#include "VideoStreamProcess/VideoPlayingThread.h"
+#include "VideoProcessEngine.h"
 
 bool VideoStreamingServerApp::ParseConfiguration() {
   bool res = true;
@@ -50,11 +52,16 @@ int VideoStreamingServerApp::main(const std::vector<std::string> &args) {
 //  VideoStreamDecoderFactory videoStreamDecoderFactory(m_config);
 //  VideoStreamDecoder::Ptr
 //      pVideoStreamDecoder = videoStreamDecoderFactory.MakeStreamDecoder((VID_STREAM_TYPE) m_config.m_streamType);
+  VideoProcessEngine videoProcessEngine(m_config, logger());
+
   USBWebCamStreamDecoder pVideoStreamDecoder(m_config);
   if (!pVideoStreamDecoder.Init()) {
     logger().error("Failed to initialize VideoStreamDecoder!");
     return EXIT_SOFTWARE;
   }
-  pVideoStreamDecoder.Start();
+  std::function<void(const ImageFrame&)> onFrameDecodedCbFunc = std::bind(&VideoProcessEngine::onRecvFrame,
+      &videoProcessEngine,
+      std::placeholders::_1);
+  pVideoStreamDecoder.Start(onFrameDecodedCbFunc);
   waitForTerminationRequest();
 }

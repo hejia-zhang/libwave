@@ -19,6 +19,10 @@ cuda_add_library(${PROJECT_NAME} SHARED
         include/VideoStreamDecoders/RTSPStreamDecoder.h
         include/VideoStreamDecoders/USBWebCamStreamDecoder.h
         include/VideoStreamDecoders/VideoStreamDecoder.h
-        include/VideoStreamDecoders/VideoStreamDecoderFactory.h)
+        include/VideoStreamDecoders/VideoStreamDecoderFactory.h
+        include/VideoStreamProcess/VideoPushingThread.h
+        src/VideoStreamProcess/VideoPushingThread.cpp
+        src/VideoStreamProcess/VideoPlayingThread.cpp
+        include/VideoStreamProcess/VideoPlayingThread.h)
 
 target_link_libraries(${PROJECT_NAME} ${FFMPEG_LIBRARIES} ${OpenCV_LIBS})
