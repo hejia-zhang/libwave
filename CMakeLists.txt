@@ -18,6 +18,8 @@ include_directories(${EIGEN3_INCLUDE_DIRS}
                     /usr/local/include
                     /usr/local/cuda/include)
 
+include_directories(3rd_party/websocketpp 3rd_party/beast/include/boost)
+
 link_directories(/usr/local/lib)
 
 add_subdirectory(libwave)

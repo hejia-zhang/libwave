@@ -1,3 +1,6 @@
 [submodule "3rd_party/websocketpp"]
 	path = 3rd_party/websocketpp
 	url = https://github.com/zaphoyd/websocketpp.git
+[submodule "3rd_party/beast"]
+	path = 3rd_party/beast
+	url = https://github.com/boostorg/beast.git
