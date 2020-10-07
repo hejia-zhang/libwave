@@ -17,7 +17,7 @@ using FrameCBFunc = void(const ImageFrame &);
 
 class VideoStreamDecoder : public Poco::Runnable, public Poco::RefCountedObject {
  public:
-  typedef Poco::AutoPtr<VideoStreamDecoder> Ptr;
+//  typedef Poco::AutoPtr<VideoStreamDecoder> Ptr;
 
   VideoStreamDecoder(const AppConfig &config);
   virtual ~VideoStreamDecoder();

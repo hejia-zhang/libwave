@@ -39,6 +39,8 @@ extern "C" {
 ///
 class MP4VideoStreamDecoder : public VideoStreamDecoder {
 public:
+  typedef Poco::AutoPtr<MP4VideoStreamDecoder> Ptr;
+
   /// The function to start the thread
   /// \param cb
   void Start(const std::function<FrameCBFunc>& cb);

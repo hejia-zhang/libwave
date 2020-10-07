@@ -159,3 +159,23 @@ VID_ERR USBWebCamStreamDecoder::Connect() {
   }
   return res;
 }
+
+//USBWebCamStreamDecoder::VideoStreamDecoder(const AppConfig &config) :
+//    m_config(config){
+//}
+//
+//USBWebCamStreamDecoder::~VideoStreamDecoder() {
+////  if (m_thread.isRunning()) {
+////    Exit();
+////  }
+//}
+
+//void USBWebCamStreamDecoder::Exit() {
+//  m_stop = true;
+//  m_thread.join();
+//}
+//
+//void USBWebCamStreamDecoder::Start(const std::function<FrameCBFunc> &cb) {
+//  m_frameCallback = cb;
+//  m_thread.start(*this);
+//}

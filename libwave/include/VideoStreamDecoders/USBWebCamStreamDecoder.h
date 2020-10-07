@@ -19,27 +19,40 @@ extern "C" {
 #include <libswscale/swscale.h>
 }
 
+#include <Poco/Thread.h>
+#include <Poco/AutoPtr.h>
+#include <Poco/Logger.h>
+#include <Poco/Runnable.h>
+
+#include "../CommonStruct.h"
+#include "../ErrCode.h"
 #include "VideoStreamDecoder.h"
 
-class USBWebCamStreamDecoder : public VideoStreamDecoder {
-public:
-  USBWebCamStreamDecoder(const AppConfig& config) : VideoStreamDecoder(config) {
+using FrameCBFunc = void(const ImageFrame &);
+
+ class USBWebCamStreamDecoder : public VideoStreamDecoder {
+ public:
+//  typedef Poco::AutoPtr<USBWebCamStreamDecoder> Ptr;
+
+  USBWebCamStreamDecoder(const AppConfig &config) : VideoStreamDecoder(config) {
   }
 
   virtual ~USBWebCamStreamDecoder() {
   }
-
-  void run();
+//  void Start(const std::function<FrameCBFunc> &cb = std::function<FrameCBFunc>());
+//  void Exit();
+  virtual void run() override;
   bool Init();
   VID_ERR Connect();
 
-private:
+ private:
   AVFormatContext *m_pFormatCtx = nullptr;
   AVCodecContext *m_pDecoderCtx = nullptr;
   enum AVPixelFormat m_hwPixFmt;
   AVCodec *m_pDecoder = nullptr;
   AVStream *m_pVideo = nullptr;
-
+  bool m_stop = false;
   int m_nVideoStreamIndex = -1;
+  bool m_bConnected = false;
 };
 #endif //USBWEBCAMSTREAMDECODER_H

@@ -21,7 +21,7 @@ class VideoStreamDecoderFactory {
   virtual ~VideoStreamDecoderFactory() {
   }
 
-  VideoStreamDecoder::Ptr MakeStreamDecoder(VID_STREAM_TYPE type);
+//  VideoStreamDecoder MakeStreamDecoder(VID_STREAM_TYPE type);
 
  private:
   const AppConfig &m_config;

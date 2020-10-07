@@ -1,5 +1,6 @@
 #include "VideoStreamDecoders/VideoStreamDecoderFactory.h"
 #include "VideoStreamingServerApp.h"
+#include "VideoStreamDecoders/USBWebCamStreamDecoder.h"
 #include "NamedMutexScopedLock.h"
 
 bool VideoStreamingServerApp::ParseConfiguration() {
@@ -46,12 +47,14 @@ int VideoStreamingServerApp::main(const std::vector<std::string> &args) {
     return EXIT_CONFIG;
   }
 
-  VideoStreamDecoderFactory videoStreamDecoderFactory(m_config);
-  VideoStreamDecoder::Ptr
-      pVideoStreamDecoder = videoStreamDecoderFactory.MakeStreamDecoder((VID_STREAM_TYPE) m_config.m_streamType);
-  if (!pVideoStreamDecoder->Init()) {
+//  VideoStreamDecoderFactory videoStreamDecoderFactory(m_config);
+//  VideoStreamDecoder::Ptr
+//      pVideoStreamDecoder = videoStreamDecoderFactory.MakeStreamDecoder((VID_STREAM_TYPE) m_config.m_streamType);
+  USBWebCamStreamDecoder pVideoStreamDecoder(m_config);
+  if (!pVideoStreamDecoder.Init()) {
     logger().error("Failed to initialize VideoStreamDecoder!");
     return EXIT_SOFTWARE;
   }
-  pVideoStreamDecoder->Start();
+  pVideoStreamDecoder.Start();
+  waitForTerminationRequest();
 }
