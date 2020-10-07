@@ -7,7 +7,7 @@
 
 #include <Poco/Util/ServerApplication.h>
 
-#include "libwave/CommonStruct.h"
+#include "CommonStruct.h"
 
 
 class VideoStreamingServerApp : public Poco::Util::ServerApplication {

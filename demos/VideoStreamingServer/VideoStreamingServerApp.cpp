@@ -1,4 +1,4 @@
-#include "libwave/VideoStreamDecoders/VideoStreamDecoderFactory.h"
+#include "VideoStreamDecoders/VideoStreamDecoderFactory.h"
 #include "VideoStreamingServerApp.h"
 #include "NamedMutexScopedLock.h"
 

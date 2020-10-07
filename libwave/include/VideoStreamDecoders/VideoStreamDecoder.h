@@ -10,8 +10,8 @@
 #include <Poco/Logger.h>
 #include <Poco/Runnable.h>
 
-#include "libwave/CommonStruct.h"
-#include "libwave/ErrCode.h"
+#include "../CommonStruct.h"
+#include "../ErrCode.h"
 
 using FrameCBFunc = void(const ImageFrame &);
 

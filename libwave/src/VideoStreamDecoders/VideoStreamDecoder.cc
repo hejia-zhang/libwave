@@ -2,7 +2,7 @@
 // Created by hejia on 18-2-13.
 //
 
-#include "libwave/VideoStreamDecoders/VideoStreamDecoder.h"
+#include "VideoStreamDecoders/VideoStreamDecoder.h"
 
 VideoStreamDecoder::VideoStreamDecoder(const AppConfig &config) :
     m_config(config){

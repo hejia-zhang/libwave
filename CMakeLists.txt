@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.1)
 
-project(libwave)
+project(wave)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
@@ -20,7 +20,9 @@ include_directories(${EIGEN3_INCLUDE_DIRS}
 
 link_directories(/usr/local/lib)
 
-add_subdirectory(src)
+add_subdirectory(libwave)
+
+add_subdirectory(demos)
 
 
 

@@ -6,9 +6,9 @@
 #include <Poco/Logger.h>
 #include "Poco/NotificationQueue.h"
 
-#include "libwave/CommonStruct.h"
-#include "libwave/ErrCode.h"
-#include "libwave/StringUtility.h"
+#include "../../libwave/include/CommonStruct.h"
+#include "../../libwave/include/ErrCode.h"
+#include "../../libwave/include/StringUtility.h"
 
 class VideoPushingThread : public Poco::Runnable, public Poco::RefCountedObject {
  public:
